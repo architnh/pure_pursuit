@@ -1,7 +1,7 @@
 # f1tenth Pure Pursuit
 
 ## Overview: 
-<img src=pure_pursuit/pure_pursuit.gif height="540" width="960" > <p></p>
+<img src=pure_pursuit/pure_pursuit.gif height="300" width="400" > <p></p>
 
 This is an implementation of pure pursuit on the [f1tenth](https://f1tenth.readthedocs.io/en/stable/going_forward/simulator/index.html) simulator.
 
