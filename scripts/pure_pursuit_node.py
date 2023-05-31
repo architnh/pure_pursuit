@@ -24,13 +24,13 @@ class PurePursuit(Node):
     """
     def __init__(self):
         super().__init__('pure_pursuit_node')
+        
         filename = "sim_points.csv" 
 
-        self.steer_lookahead = 1.5
+        self.steer_lookahead = 1.0
         self.kp = 0.25
+
         self.pose_subscriber = self.create_subscription(Odometry, 'ego_racecar/odom', self.pose_callback, 1)
-        
-        
         self.drive_publisher = self.create_publisher(AckermannDriveStamped, 'drive',1)
         self.goal_points_publisher = self.create_publisher(MarkerArray, 'pp_goal_points',1)
         self.spline_publisher = self.create_publisher(Marker, 'pp_spline',1)
@@ -45,6 +45,9 @@ class PurePursuit(Node):
         self.pp_spline_data = self.visualize_spline()
         #Publish Rviz Markers every 2 seconds
         self.timer = self.create_timer(2, self.publish_rviz_data)#Publish waypoints
+
+        # self.index_list = np.arange(0,1000,1)
+        # self.yaw_list = np.zeros((1000,1))
 
 
 
@@ -62,6 +65,20 @@ class PurePursuit(Node):
         # Calculate closest point on spline
         norm_array = np.linalg.norm(spline_points - global_car_position, axis = 1)
         closest_pt_idx = np.argmin(norm_array)
+
+        """"""
+        # # Uncomment to get raw yaw data and save to file. Also uncomment self.index_list and self.yaw_list
+        # euler = (R.from_quat(quaternion)).as_euler('xyz', degrees=False)
+        # if len(self.index_list)==0:
+        #     np.savez('data.npz', yaw = self.yaw_list)
+        #     # data = np.load('data.npz')
+        #     # print(data['yaw'])
+        #     # raise
+        # if closest_pt_idx in self.index_list:
+        #     self.yaw_list[closest_pt_idx] = euler[-1]
+        #     self.index_list = np.delete(self.index_list, np.where(self.index_list == closest_pt_idx))
+        #     print(len(self.index_list))
+        """"""
 
         # Check if car is oriented opposite the spline array direction
         if(closest_pt_idx+10>(len(self.x_spline)-1)): idx = 10 
@@ -83,10 +100,10 @@ class PurePursuit(Node):
         # Calculate curvature/steering angle
         pp_goal_point_local = global_2_local(quaternion, pp_goal_point_global, global_car_position)
         steering_angle = self.calc_steer(pp_goal_point_local, self.kp)
-        print("steering_angle: ",steering_angle)
+        # print("steering_angle: ",steering_angle)
 
         msg = AckermannDriveStamped()
-        msg.drive.speed = 1.0 #float(drive_speed)###CHANGE THIS BACK, IN SIM THE CHANGING VELOCITY WAS CAUSING PROBLEMS
+        msg.drive.speed = 1.2 #float(drive_speed)###CHANGE THIS BACK, IN SIM THE CHANGING VELOCITY WAS CAUSING PROBLEMS
         msg.drive.steering_angle = float(steering_angle)
         self.drive_publisher.publish(msg)
         # TODO: publish drive message, don't forget to limit the steering angle between -0.4189 and 0.4189 radians
